@@ -26,7 +26,6 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            min-height: 100dvh; /* 適配最新手機瀏覽器真實高度，防止底部遮擋 */
             display: flex;
             flex-direction: column;
             -webkit-tap-highlight-color: transparent;
@@ -93,7 +92,7 @@
             width: 100%;
             max-width: 760px;
             margin: 0 auto;
-            padding: 0 15px 50px 15px; /* 加大底部留白，確保按鈕不被遮擋 */
+            padding: 0 15px 30px 15px;
             box-sizing: border-box;
         }
 
@@ -130,7 +129,7 @@
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            box-sizing: border-box; /* 確保輸入框邊界完整 */
+            box-sizing: border-box;
             font-family: inherit;
             font-size: 15px;
             color: var(--text-brown);
@@ -153,7 +152,6 @@
             font-weight: bold;
             font-family: inherit;
             width: 100%;
-            box-sizing: border-box; /* 核心修復：確保按鈕不超出版面 */
             transition: all 0.2s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
@@ -277,7 +275,7 @@
             padding: 12px;
             border: 2px solid #eee;
             border-radius: 8px;
-            box-sizing: border-box; /* 確保輸入框邊界完整 */
+            box-sizing: border-box;
             font-family: inherit;
             font-size: 15px;
             color: var(--text-brown);
@@ -314,7 +312,6 @@
             margin-top: 10px;
             display: inline-flex;
             align-items: center;
-            box-sizing: border-box;
             box-shadow: none;
             font-weight: normal;
         }
@@ -361,7 +358,7 @@
             cursor: pointer;
         }
 
-        /* 完成後的選項彈窗 */
+        /* 彈窗樣式 (完成後及語音設定指引) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -395,6 +392,20 @@
             flex-direction: column;
             gap: 12px;
             margin-top: 25px;
+        }
+
+        /* 語音設定指引專用微調 */
+        #voice-guide-modal .modal-content {
+            max-width: 420px;
+            text-align: left;
+        }
+        #voice-guide-modal ul {
+            padding-left: 20px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        #voice-guide-modal li {
+            margin-bottom: 8px;
         }
 
         @media (max-width: 600px) {
@@ -447,6 +458,9 @@
                     <li>練習關鍵詞讀音</li>
                     <li>開始三分鐘説話練習</li>
                 </ol>
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; text-align: center; color: #d9534f; font-weight: bold;">
+                    💻 使用電腦進入此練習，效果更佳。
+                </div>
             </div>
 
             <h3 style="display:flex; align-items:center; gap:8px;">📚 選擇練習話題：</h3>
@@ -462,7 +476,6 @@
             </div>
 
             <div id="outline-container"></div>
-            <!-- 確認按鈕，文字修改為確認，並已透過 CSS 修復寬度溢出 -->
             <button class="action-btn" onclick="confirmKeywords()" style="margin-top: 10px;">✅ 確認</button>
             <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
         </div>
@@ -474,6 +487,10 @@
             
             <button class="action-btn" onclick="startTimer()" style="margin-top: 15px;">⏱️ 開始三分鐘説話練習</button>
             <button class="download-btn" onclick="downloadKeywords()">📥 下載我的關鍵詞</button>
+            
+            <!-- 新增 AI 讀音指引連結 -->
+            <a href="#" onclick="showVoiceGuideModal(); return false;" style="color: #999; font-size: 14px; text-decoration: underline; display: block; text-align: center; margin-top: 15px;">如 AI 無法讀出普通話，請看指引</a>
+
             <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
         </div>
 
@@ -514,15 +531,39 @@
     <!-- 完成後的選擇彈窗 -->
     <div id="completion-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3>🎉 打卡信息已複製</h3>
-            <p style="font-size: 15px; color: #666; margin: 0;">接下來您想做什麼？</p>
+            <h3 style="text-align: center;">🎉 打卡信息已複製</h3>
+            <p style="font-size: 15px; color: #666; margin: 0; text-align: center;">接下來您想做什麼？</p>
             <div class="modal-btn-group">
                 <button class="action-btn" onclick="handleModalDownload()">📥 下載我的關鍵詞</button>
                 <button class="secondary" style="margin-top: 0;" onclick="handleModalReturn()">🔙 回到話題列表</button>
             </div>
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 15px; text-align: center;">
                 <a href="#" onclick="hideCompletionModal(); return false;" style="color: #aaa; font-size: 13px; text-decoration: underline;">關閉彈窗，留在本頁</a>
             </div>
+        </div>
+    </div>
+
+    <!-- iOS 語音設定指引彈窗 -->
+    <div id="voice-guide-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="text-align: center; font-size: 18px;">⚙️ iOS 語音設定指引</h3>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--text-brown); margin-top: 15px;">
+                <strong>更改朗讀 / 文字轉語音語音（Spoken Content）</strong><br>
+                如果你是用「朗讀所選項目」或「螢幕朗讀」功能，iPhone 有一個「中文」的預設語音，需要另外改：
+            </p>
+            <ul style="font-size: 14px; line-height: 1.6; color: var(--text-brown);">
+                <li>打開「設定」。</li>
+                <li>進入「輔助使用」→「朗讀內容」（Spoken Content）。</li>
+                <li>點「聲音」→ 找到「中文」。</li>
+                <li>在中文底下選擇想用的普通話聲音，例如「普通話」或標示為「China mainland／Taiwan」的一組。</li>
+            </ul>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--text-brown); margin-bottom: 5px;">
+                點入該聲音一次，把它設為預設中文語音。這樣，朗讀中文時就會用普通話而不是粵語。
+            </p>
+            <p style="font-size: 13px; line-height: 1.5; color: #d9534f; margin-top: 10px; font-weight: bold;">
+                注意：修改設定後，所有系統文字將以普通話朗讀。
+            </p>
+            <button class="action-btn" onclick="hideVoiceGuideModal()" style="margin-top: 20px;">我知道了</button>
         </div>
     </div>
 
@@ -600,6 +641,17 @@
         let keywordsData = [];
         let timerInterval;
         let audioCtx; 
+        
+        // 預先加載系統語音，確保能找到普通話 (解決 iOS 默認粵語 Bug)
+        let availableVoices = [];
+        function loadVoices() {
+            availableVoices = window.speechSynthesis.getVoices();
+        }
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            // 當語音庫改變或加載完成時重新獲取
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
 
         document.getElementById('password').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') login();
@@ -618,6 +670,9 @@
             document.getElementById('app-container').classList.add('active'); 
             initTopics();
             showView('view-topics');
+            
+            // 登錄時再次嘗試加載一次語音，防範延遲加載問題
+            if(availableVoices.length === 0) loadVoices();
         }
 
         function showView(viewId) {
@@ -718,17 +773,41 @@
             for (let i = 0; i < words.length; i++) {
                 await speakSingleWord(words[i]);
                 if (i < words.length - 1) {
-                    // 停頓間隔 0.5 秒 (500 毫秒)
+                    // 停頓間隔維持為更流暢的 0.5 秒 (500 毫秒)
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
         }
 
+        // 強化的 AI 語音播放邏輯，確保選取普通話
         function speakSingleWord(word) {
             return new Promise(resolve => {
                 const utterance = new SpeechSynthesisUtterance(word);
-                utterance.lang = 'zh-CN';
+                utterance.lang = 'zh-CN'; // 預設語言標籤
                 utterance.rate = 0.8;
+                
+                if (availableVoices.length === 0) {
+                    loadVoices(); // 嘗試重新加載
+                }
+                
+                // 強制分配普通話語音對象
+                if (availableVoices.length > 0) {
+                    // 優先尋找大陸普通話 (zh-CN)
+                    let targetVoice = availableVoices.find(v => v.lang === 'zh-CN' || v.lang === 'zh_CN');
+                    // 次要尋找名字包含特定關鍵字的語音 (如 iOS 常見的 Ting-Ting, 系統自帶普通話等)
+                    if (!targetVoice) {
+                        targetVoice = availableVoices.find(v => v.name.includes('Mandarin') || v.name.includes('普通話') || v.name.includes('Ting-Ting'));
+                    }
+                    // 最後尋找台灣國語 (zh-TW)
+                    if (!targetVoice) {
+                        targetVoice = availableVoices.find(v => v.lang === 'zh-TW' || v.lang === 'zh_TW');
+                    }
+                    
+                    if (targetVoice) {
+                        utterance.voice = targetVoice;
+                    }
+                }
+
                 utterance.onend = resolve;
                 utterance.onerror = resolve; 
                 window.speechSynthesis.speak(utterance);
@@ -884,22 +963,27 @@
             document.body.removeChild(textArea);
         }
 
-        // 彈窗控制函數
+        // --- 彈窗控制函數區 ---
+
         function showCompletionModal() {
             document.getElementById('completion-modal').classList.add('active');
         }
-
         function hideCompletionModal() {
             document.getElementById('completion-modal').classList.remove('active');
         }
-
         function handleModalDownload() {
             downloadKeywords();
         }
-
         function handleModalReturn() {
             hideCompletionModal();
             returnToTopics();
+        }
+
+        function showVoiceGuideModal() {
+            document.getElementById('voice-guide-modal').classList.add('active');
+        }
+        function hideVoiceGuideModal() {
+            document.getElementById('voice-guide-modal').classList.remove('active');
         }
     </script>
 </body>
