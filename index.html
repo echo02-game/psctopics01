@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>命題説話練習</title>
+    <!-- 引入 pinyin-pro 庫生成拼音 -->
+    <script src="https://unpkg.com/pinyin-pro"></script>
+    <style>
+        :root {
+            --text-brown: #603F26; /* 全局深咖色文字 */
+            --topic-bg: #FFFFFF;   /* 話題按鈕底色 */
+            --topic-active: #FFD09B; /* 話題按鈕懸浮/點擊色 */
+            --btn-yellow: #FFEAC5; /* 指定按鈕底色 */
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --container-bg: rgba(255, 255, 255, 0.95);
+            --border-radius: 16px;
+        }
+
+        /* 基礎設置與動畫 */
+        body {
+            font-family: "Yuanti SC", "YouYuan", "STYuanti", sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-brown); 
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-height: 100dvh; /* 適配最新手機瀏覽器真實高度，防止底部遮擋 */
+            display: flex;
+            flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view.active {
+            display: block !important;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .view { display: none !important; }
+
+        /* 排版與文字 */
+        .pinyin-text {
+            font-family: "Calibri", sans-serif;
+            color: #8B5A2B;
+            font-size: 16px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        h2, h3, h4, p, label { color: var(--text-brown) !important; }
+
+        /* 頂部標題 */
+        header {
+            text-align: center;
+            padding: 25px 15px;
+            background: var(--container-bg);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            display: none;
+            margin-bottom: 20px;
+        }
+        .title-line1 {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        .title-line2 {
+            color: var(--text-brown);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 底部版權 */
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        /* 容器通用樣式 */
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 0 15px 50px 15px; /* 加大底部留白，確保按鈕不被遮擋 */
+            box-sizing: border-box;
+        }
+
+        /* 登錄頁面 */
+        .login-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+        }
+        .login-box {
+            background: var(--container-bg);
+            padding: 40px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            width: 90%;
+            max-width: 360px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            box-sizing: border-box; /* 確保輸入框邊界完整 */
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--text-brown);
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--topic-active);
+        }
+
+        /* 按鈕設計 */
+        button {
+            background-color: var(--text-brown);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box; /* 核心修復：確保按鈕不超出版面 */
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button:hover, button:active {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        /* 指定的淺色按鈕 */
+        .action-btn {
+            background-color: var(--btn-yellow) !important;
+            color: var(--text-brown) !important;
+        }
+        .action-btn:hover, .action-btn:active {
+            background-color: var(--topic-active) !important;
+        }
+        
+        /* 下載按鈕特別顏色 */
+        .download-btn {
+            background-color: var(--btn-yellow) !important;
+            color: var(--text-brown) !important;
+            margin-top: 15px;
+        }
+        .download-btn:hover {
+            background-color: var(--topic-active) !important;
+        }
+
+        /* 返回列表按鈕 */
+        button.secondary {
+            background-color: transparent;
+            color: var(--text-brown);
+            border: 2px solid var(--text-brown);
+            box-shadow: none;
+            margin-top: 15px;
+        }
+        button.secondary:hover {
+            background-color: var(--text-brown);
+            color: white;
+        }
+
+        /* 隨機話題按鈕 */
+        .random-btn {
+            background-color: var(--topic-active);
+            color: var(--text-brown);
+            width: auto;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(255, 208, 155, 0.6);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* 網頁使用説明區 */
+        .usage-guide {
+            background: #fff;
+            border: 1px dashed var(--text-brown);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .usage-guide h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .usage-guide ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .usage-guide li {
+            margin-bottom: 5px;
+        }
+
+        /* 話題列表 */
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+        .topic-btn {
+            background-color: var(--topic-bg);
+            border: 2px solid #eaeaea; 
+            color: var(--text-brown);
+            padding: 18px 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+            text-align: center;
+            line-height: 1.5;
+            font-weight: bold;
+        }
+        .topic-btn:hover {
+            border-color: var(--topic-active);
+            transform: translateY(-2px);
+        }
+        .topic-btn:active {
+            background-color: var(--topic-active);
+            border-color: var(--topic-active);
+            transform: translateY(0);
+        }
+
+        /* 卡片內容 */
+        .card-item {
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+            border-left: 5px solid var(--topic-active); 
+        }
+        .card-item h4 {
+            margin: 0 0 12px 0;
+            font-size: 17px;
+        }
+        .card-item input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            box-sizing: border-box; /* 確保輸入框邊界完整 */
+            font-family: inherit;
+            font-size: 15px;
+            color: var(--text-brown);
+            background: #fafafa;
+        }
+        .card-item input[type="text"]:focus {
+            border-color: var(--topic-active);
+            outline: none;
+            background: #fff;
+        }
+
+        /* 溫馨提示區 */
+        .info-alert {
+            background: #fff;
+            color: var(--text-brown);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px dashed var(--text-brown);
+        }
+
+        /* 語音按鈕 */
+        .speaker-btn {
+            background: #f0f0f0;
+            color: var(--text-brown);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            box-sizing: border-box;
+            box-shadow: none;
+            font-weight: normal;
+        }
+        .speaker-btn:hover { background: #e0e0e0; }
+
+        /* 倒計時 */
+        .timer-display {
+            font-size: 60px;
+            font-weight: bold;
+            color: #d9534f;
+            text-align: center;
+            margin: 30px 0;
+            font-family: "Calibri", sans-serif;
+            text-shadow: 0 4px 10px rgba(217, 83, 79, 0.2);
+        }
+
+        /* 自評 Checklist 表單 */
+        .checklist-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .checklist-group label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid #eee;
+            transition: 0.2s;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .checklist-group label:active, .checklist-group label:hover {
+            border-color: var(--topic-active);
+            background: #fffaf0;
+        }
+        .checklist-group input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--text-brown);
+            cursor: pointer;
+        }
+
+        /* 完成後的選項彈窗 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--container-bg);
+            padding: 30px 25px;
+            border-radius: var(--border-radius);
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--text-brown);
+            margin-bottom: 10px;
+        }
+        .modal-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .topic-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .topic-btn { padding: 15px 10px; font-size: 15px; }
+            header { padding: 20px 10px; }
+            .timer-display { font-size: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 登錄頁面 -->
+    <div id="login-view" class="view active">
+        <div class="login-wrapper">
+            <div class="login-box">
+                <h2>🌟 命題説話練習</h2>
+                <div class="input-group">
+                    <label>👤 姓名</label>
+                    <input type="text" id="username" placeholder="請輸入您的名字">
+                </div>
+                <div class="input-group">
+                    <label>🔒 密碼</label>
+                    <input type="password" id="password" placeholder="請輸入密碼">
+                </div>
+                <button onclick="login()">進入系統</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頂部標題 -->
+    <header id="main-header">
+        <div class="title-line1">普通話水平測試</div>
+        <div class="title-line2">命題説話練習 —— 説出你的故事 🎤</div>
+    </header>
+
+    <div class="container view" id="app-container">
+        
+        <!-- 視圖 1：話題列表 -->
+        <div id="view-topics" class="view">
+            <div style="text-align: center;">
+                <button class="random-btn" onclick="startRandomTopic()">🎲 隨機開始話題</button>
+            </div>
+            
+            <div class="usage-guide">
+                <h4>📖 網頁使用方式説明：</h4>
+                <ol>
+                    <li>點擊話題或隨機開始話題</li>
+                    <li>寫下你的關鍵詞，填寫後可下載保存</li>
+                    <li>練習關鍵詞讀音</li>
+                    <li>開始三分鐘説話練習</li>
+                </ol>
+            </div>
+
+            <h3 style="display:flex; align-items:center; gap:8px;">📚 選擇練習話題：</h3>
+            <div class="topic-grid" id="topic-list"></div>
+        </div>
+
+        <!-- 視圖 2：話題大綱與關鍵詞輸入 -->
+        <div id="view-outline" class="view">
+            <h3 id="current-topic-title" style="text-align:center;"></h3>
+            
+            <div class="info-alert">
+                💡 <strong>提示：</strong> 輸入多個關鍵詞時，請用「/」分隔（例如：開心/難忘）。AI 朗讀時會自動為您停頓。
+            </div>
+
+            <div id="outline-container"></div>
+            <!-- 確認按鈕，文字修改為確認，並已透過 CSS 修復寬度溢出 -->
+            <button class="action-btn" onclick="confirmKeywords()" style="margin-top: 10px;">✅ 確認</button>
+            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+        </div>
+
+        <!-- 視圖 3：拼音展示與練習 -->
+        <div id="view-practice" class="view">
+            <h3 id="practice-topic-title" style="text-align:center;"></h3>
+            <div id="practice-container"></div>
+            
+            <button class="action-btn" onclick="startTimer()" style="margin-top: 15px;">⏱️ 開始三分鐘説話練習</button>
+            <button class="download-btn" onclick="downloadKeywords()">📥 下載我的關鍵詞</button>
+            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+        </div>
+
+        <!-- 視圖 4：三分鐘説話倒計時 -->
+        <div id="view-speaking" class="view">
+            <h3 id="speaking-topic-title" style="text-align:center;"></h3>
+            <div class="timer-display" id="timer">03:00</div>
+            <div id="speaking-container"></div>
+            <button class="action-btn" onclick="finishSpeaking()" style="margin-top: 20px;">🏁 結束練習</button>
+            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+        </div>
+
+        <!-- 視圖 5：練習自評 Checklist -->
+        <div id="view-survey" class="view">
+            <h3 style="text-align:center;">📝 練習自評</h3>
+            <div class="card-item">
+                <p style="margin-top:0; font-size:15px; color:#666 !important;">請勾選你本次練習達到的標準：</p>
+                <div class="checklist-group">
+                    <label><input type="checkbox" value="説完三分鐘"> 説完三分鐘</label>
+                    <label><input type="checkbox" value="不離題"> 不離題</label>
+                    <label><input type="checkbox" value="表達規範"> 表達規範</label>
+                    <label><input type="checkbox" value="表達流暢"> 表達流暢</label>
+                </div>
+            </div>
+            <button onclick="submitSurvey()">📋 提交並複製打卡信息</button>
+            <button class="download-btn" onclick="downloadKeywords()">📥 下載我的關鍵詞</button>
+            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+        </div>
+
+    </div>
+
+    <!-- 底部版權 -->
+    <footer>
+        本網頁拼音及示範讀音均由AI生成，標準注音請參考<br>《普通話水平測試實施綱要（2021年版）》及現代漢語詞典。<br>
+        網頁僅供機構内部使用。普通話培訓測試中心版權所有。
+    </footer>
+
+    <!-- 完成後的選擇彈窗 -->
+    <div id="completion-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>🎉 打卡信息已複製</h3>
+            <p style="font-size: 15px; color: #666; margin: 0;">接下來您想做什麼？</p>
+            <div class="modal-btn-group">
+                <button class="action-btn" onclick="handleModalDownload()">📥 下載我的關鍵詞</button>
+                <button class="secondary" style="margin-top: 0;" onclick="handleModalReturn()">🔙 回到話題列表</button>
+            </div>
+            <div style="margin-top: 15px;">
+                <a href="#" onclick="hideCompletionModal(); return false;" style="color: #aaa; font-size: 13px; text-decoration: underline;">關閉彈窗，留在本頁</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+        ========================================================================
+           ✨✨✨ 老師專用：話題大綱修改區 ✨✨✨
+        ========================================================================
+        修改説明（完全不需要懂編程，像打字一樣即可）：
+        1. 每一塊的第一行寫話題名稱（必須和列表中的名字一樣，例如：1. 我的一天）。
+        2. 下面的行寫大綱內容，每行一個。
+        3. 不同話題之間，請務必用「空行」隔開。
+        4. 如果你沒有在這裡寫上的話題，系統會自動分配「一、背景/二、發展/三、高潮/四、感受」。
+        ========================================================================
+        */
+        const TEACHER_OUTLINES_DATA = `
+
+        1. 我的一天
+        一、 早晨的開始
+        二、 白天的工作/學習
+        三、 晚上的休閒
+        四、 這一天的感受
+
+        2. 老師
+        一、 老師的外貌與性格
+        二、 令我印象深刻的一件事
+        三、 老師對我的影響
+        四、 我想對老師説的話
+
+        3. 珍貴的禮物
+        一、 禮物是什麼
+        二、 禮物是誰送的以及當時的背景
+        三、 為什麼這份禮物很珍貴
+        四、 我的感受與總結
+
+        `;
+        /* ================= 修改區結束 ================= */
+
+        const { pinyin } = pinyinPro;
+
+        // 將老師輸入的文字轉換為系統大綱數據
+        const topicOutlines = {};
+        const outlineBlocks = TEACHER_OUTLINES_DATA.trim().split(/\n\s*\n/);
+        outlineBlocks.forEach(block => {
+            const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+            if (lines.length > 1) {
+                const topicName = lines[0];
+                const outlines = lines.slice(1);
+                topicOutlines[topicName] = outlines;
+            }
+        });
+
+        // 默認提綱
+        const defaultOutlines = ["一、 背景與起因", "二、 發展與經過", "三、 高潮與結果", "四、 感受與總結"];
+
+        // 原始話題數據
+        const rawTopics = [
+            "1., 我的一天", "2., 老師", "3., 珍貴的禮物", "*4., 假日生活", "*5., 我喜愛的植物",
+            "6., 我的理想（或願望）", "7., 過去的一年", "*8., 朋友", "*9., 童年生活", "10., 我的興趣愛好",
+            "*11., 家鄉（或熟悉的地方）", "*12., 我喜歡的季節（或天氣）", "*13., 印象深刻的書籍（或報刊）", "*14., 難忘的旅行", "*15., 我喜歡的美食",
+            "*16., 我所在的學校（或公司、團隊、其他機構）", "*17., 尊敬的人", "*18., 我喜愛的動物", "*19., 我瞭解的地域文化（或風俗）", "*20., 體育運動的樂趣",
+            "21., 讓我快樂的事情", "*22., 我喜歡的節日", "23., 我欣賞的歷史人物", "24., 勞動的體會", "*25., 我喜歡的職業（或專業）",
+            "*26., 嚮往的地方", "27., 讓我感動的事情", "*28., 我喜愛的藝術形式", "29., 我瞭解的十二生肖", "*30., 學習普通話（或其他語言）的體會",
+            "31., 家庭對個人成長的影響", "32., 生活中的誠信", "*33., 談服飾", "34., 自律與我", "35., 對終身學習的看法",
+            "*36., 談談衛生與健康", "*37., 對環境保護的認識", "*38., 談社會公德（或職業道德）", "39., 對團隊精神的理解", "40., 談中國傳統文化",
+            "*41., 科技發展與社會生活", "*42., 談個人修養", "43., 對幸福的理解", "44., 如何保持良好的心態", "45., 對垃圾分類的認識",
+            "46., 網絡時代的生活", "47., 對美的看法", "48., 談傳統美德", "49., 對親情（或友情、愛情）的理解", "50., 小家、大家與國家"
+        ];
+        
+        const topics = rawTopics.map(t => t.replace('*', '').replace('.,', '.').trim());
+
+        let currentUser = "";
+        let currentTopic = "";
+        let currentTopicOutlines = [];
+        let keywordsData = [];
+        let timerInterval;
+        let audioCtx; 
+
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') login();
+        });
+
+        function login() {
+            const name = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+            
+            if(!name) { alert("請輸入姓名"); return; }
+            if(pass !== "vtcpsc") { alert("請輸入正確密碼"); return; }
+
+            currentUser = name;
+            document.getElementById('login-view').classList.remove('active');
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('app-container').classList.add('active'); 
+            initTopics();
+            showView('view-topics');
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('#app-container > .view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo(0, 0); 
+        }
+
+        function returnToTopics() {
+            clearInterval(timerInterval);
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            showView('view-topics');
+        }
+
+        function initTopics() {
+            const list = document.getElementById('topic-list');
+            list.innerHTML = '';
+            topics.forEach(topicText => {
+                const btn = document.createElement('button');
+                btn.className = 'topic-btn';
+                btn.innerText = topicText;
+                btn.onclick = () => selectTopic(topicText);
+                list.appendChild(btn);
+            });
+        }
+
+        function startRandomTopic() {
+            const randomIndex = Math.floor(Math.random() * topics.length);
+            selectTopic(topics[randomIndex]);
+        }
+
+        function selectTopic(topicText) {
+            currentTopic = topicText;
+            document.getElementById('current-topic-title').innerText = currentTopic;
+            
+            currentTopicOutlines = topicOutlines[currentTopic] || defaultOutlines;
+            
+            const container = document.getElementById('outline-container');
+            container.innerHTML = '';
+            
+            currentTopicOutlines.forEach((outline, index) => {
+                container.innerHTML += `
+                    <div class="card-item">
+                        <h4>${outline}</h4>
+                        <input type="text" id="kw-${index}" placeholder="例如：開心 / 難忘">
+                    </div>
+                `;
+            });
+            showView('view-outline');
+        }
+
+        function confirmKeywords() {
+            keywordsData = [];
+            let hasInput = false;
+            currentTopicOutlines.forEach((outline, index) => {
+                const val = document.getElementById(`kw-${index}`).value.trim();
+                if(val) hasInput = true;
+                keywordsData.push({ outline: outline, keyword: val });
+            });
+
+            if(!hasInput) {
+                alert("請至少為一個提綱輸入關鍵詞喔！");
+                return;
+            }
+
+            document.getElementById('practice-topic-title').innerText = currentTopic;
+            const container = document.getElementById('practice-container');
+            container.innerHTML = '';
+
+            keywordsData.forEach((item) => {
+                if(item.keyword) {
+                    const py = pinyin(item.keyword);
+                    container.innerHTML += `
+                        <div class="card-item">
+                            <h4>${item.outline}</h4>
+                            <div class="pinyin-text">${py}</div>
+                            <div style="font-size:18px; margin-bottom:12px; font-weight:bold;">${item.keyword}</div>
+                            <button class="speaker-btn" onclick="speakPhrase('${item.keyword}')">🔊 AI 朗讀</button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML += `
+                        <div class="card-item">
+                            <h4>${item.outline}</h4>
+                            <div style="color:#aaa; font-size:15px; font-style:italic;">（未輸入關鍵詞）</div>
+                        </div>
+                    `;
+                }
+            });
+            showView('view-practice');
+        }
+
+        async function speakPhrase(text) {
+            if (!('speechSynthesis' in window)) return alert("抱歉，設備不支持語音合成功能");
+            window.speechSynthesis.cancel(); 
+            
+            const words = text.split('/').map(w => w.trim()).filter(w => w !== '');
+            for (let i = 0; i < words.length; i++) {
+                await speakSingleWord(words[i]);
+                if (i < words.length - 1) {
+                    // 停頓間隔 0.5 秒 (500 毫秒)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+
+        function speakSingleWord(word) {
+            return new Promise(resolve => {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8;
+                utterance.onend = resolve;
+                utterance.onerror = resolve; 
+                window.speechSynthesis.speak(utterance);
+            });
+        }
+
+        function startTimer() {
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+            document.getElementById('speaking-topic-title').innerText = currentTopic;
+            const container = document.getElementById('speaking-container');
+            container.innerHTML = '';
+
+            keywordsData.forEach(item => {
+                container.innerHTML += `
+                    <div class="card-item">
+                        <h4>${item.outline}</h4>
+                        <div style="font-size:18px; font-weight:bold;">${item.keyword || '<span style="color:#ccc;font-size:15px;font-style:italic;">（無）</span>'}</div>
+                    </div>
+                `;
+            });
+
+            showView('view-speaking');
+
+            let timeleft = 180; 
+            document.getElementById('timer').innerText = "03:00";
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeleft--;
+                let m = Math.floor(timeleft / 60).toString().padStart(2, '0');
+                let s = (timeleft % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+                
+                if (timeleft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').innerText = "時間到";
+                    playAlarm();
+                }
+            }, 1000);
+        }
+
+        function playAlarm() {
+            try {
+                if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                const osc = audioCtx.createOscillator();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.5);
+                setTimeout(() => alert("時間到！請停止説話。"), 100);
+            } catch(e) {
+                alert("時間到！請停止説話。");
+            }
+        }
+
+        function finishSpeaking() {
+            clearInterval(timerInterval);
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            
+            document.querySelectorAll('.checklist-group input[type="checkbox"]').forEach(chk => chk.checked = false);
+            showView('view-survey');
+        }
+
+        // 下載關鍵詞為 txt 檔案
+        function downloadKeywords() {
+            if (keywordsData.length === 0) {
+                alert("目前無關鍵詞可下載");
+                return;
+            }
+
+            let fileContent = `普通話命題説話練習 —— 關鍵詞記錄\n`;
+            fileContent += `姓名：${currentUser}\n`;
+            fileContent += `話題：${currentTopic}\n`;
+            fileContent += `--------------------------------------\n\n`;
+
+            keywordsData.forEach(item => {
+                fileContent += `【${item.outline}】\n`;
+                if (item.keyword) {
+                    const py = pinyin(item.keyword);
+                    fileContent += `拼音：${py}\n`;
+                    fileContent += `詞彙：${item.keyword}\n\n`;
+                } else {
+                    fileContent += `（未輸入關鍵詞）\n\n`;
+                }
+            });
+
+            // 建立並觸發下載
+            const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${currentUser}_${currentTopic.split('.')[0]}_關鍵詞.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // 提交自評並複製打卡信息，改為彈窗顯示
+        function submitSurvey() {
+            const allCriteria = ["説完三分鐘", "不離題", "表達規範", "表達流暢"];
+            let evalResults = [];
+
+            allCriteria.forEach(item => {
+                const chk = document.querySelector(`.checklist-group input[value="${item}"]`);
+                if (chk && chk.checked) {
+                    evalResults.push(`✔ ${item}`);
+                } else {
+                    evalResults.push(`✖ ${item}`); 
+                }
+            });
+
+            const evalStr = evalResults.join('\n');
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+            const resultText = `姓名：${currentUser}\n日期：${dateStr}\n話題：${currentTopic}\n自評結果：\n${evalStr}`;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(resultText).then(() => {
+                    alert("✅ 打卡信息已成功複製到剪貼板！\n\n" + resultText);
+                    showCompletionModal(); // 顯示彈窗取代直接跳轉
+                }).catch(err => fallbackCopyTextToClipboard(resultText));
+            } else {
+                fallbackCopyTextToClipboard(resultText);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if(successful) {
+                    alert("✅ 打卡信息已成功複製到剪貼板！\n\n" + text);
+                } else {
+                    alert("自動複製失敗，請長按手動複製以下內容：\n\n" + text);
+                }
+                showCompletionModal(); // 顯示彈窗取代直接跳轉
+            } catch (err) {
+                alert("自動複製失敗，請長按手動複製以下內容：\n\n" + text);
+                showCompletionModal();
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 彈窗控制函數
+        function showCompletionModal() {
+            document.getElementById('completion-modal').classList.add('active');
+        }
+
+        function hideCompletionModal() {
+            document.getElementById('completion-modal').classList.remove('active');
+        }
+
+        function handleModalDownload() {
+            downloadKeywords();
+        }
+
+        function handleModalReturn() {
+            hideCompletionModal();
+            returnToTopics();
+        }
+    </script>
+</body>
+</html>
