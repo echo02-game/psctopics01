@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>命題説話練習</title>
+    <!-- 轉發分享時顯示的網頁標題與描述 -->
+    <title>命題説話練習【關鍵詞】</title>
+    <meta name="description" content="命題説話練習【關鍵詞】">
+    <meta property="og:title" content="命題説話練習【關鍵詞】">
+    <meta property="og:description" content="命題説話練習【關鍵詞】">
+    
     <!-- 引入 pinyin-pro 庫生成拼音 -->
     <script src="https://unpkg.com/pinyin-pro"></script>
     <style>
@@ -422,7 +427,7 @@
     <div id="login-view" class="view active">
         <div class="login-wrapper">
             <div class="login-box">
-                <h2>🌟 命題説話練習</h2>
+                <h2>🌟 命題説話練習【關鍵詞】</h2>
                 <div class="input-group">
                     <label>👤 姓名</label>
                     <input type="text" id="username" placeholder="請輸入您的名字">
@@ -574,30 +579,31 @@
         ========================================================================
         修改説明（完全不需要懂編程，像打字一樣即可）：
         1. 每一塊的第一行寫話題名稱（必須和列表中的名字一樣，例如：1. 我的一天）。
-        2. 下面的行寫大綱內容，每行一個。
+        2. 下面的行寫大綱內容，每行一個。建議結構為：開頭、主體（可分為2-3點）、結語。
         3. 不同話題之間，請務必用「空行」隔開。
-        4. 如果你沒有在這裡寫上的話題，系統會自動分配「一、背景/二、發展/三、高潮/四、感受」。
+        4. 如果你沒有在這裡寫上的話題，系統會自動分配默認三項：「一、 開頭 / 二、 主體 / 三、 結語」。
         ========================================================================
         */
         const TEACHER_OUTLINES_DATA = `
 
         1. 我的一天
-        一、 早晨的開始
-        二、 白天的工作/學習
-        三、 晚上的休閒
-        四、 這一天的感受
+        一、 開頭：點題
+        二、 主體：早晨的開始
+        三、 主體：白天的工作/學習
+        四、 主體：晚上的休閒
+        五、 結語：這一天的感受
 
         2. 老師
-        一、 老師的外貌與性格
-        二、 令我印象深刻的一件事
-        三、 老師對我的影響
-        四、 我想對老師説的話
+        一、 開頭：介紹這位老師
+        二、 主體：老師的外貌與性格
+        三、 主體：令我印象深刻的一件事
+        四、 結語：老師對我的影響與想説的話
 
         3. 珍貴的禮物
-        一、 禮物是什麼
-        二、 禮物是誰送的以及當時的背景
-        三、 為什麼這份禮物很珍貴
-        四、 我的感受與總結
+        一、 開頭：這是一份什麼禮物
+        二、 主體：是誰送的以及當時的背景
+        三、 主體：為什麼這份禮物很珍貴
+        四、 結語：我的感受與總結
 
         `;
         /* ================= 修改區結束 ================= */
@@ -616,8 +622,8 @@
             }
         });
 
-        // 默認提綱
-        const defaultOutlines = ["一、 背景與起因", "二、 發展與經過", "三、 高潮與結果", "四、 感受與總結"];
+        // 默認提綱 (三大部分)
+        const defaultOutlines = ["一、 開頭", "二、 主體", "三、 結語"];
 
         // 原始話題數據
         const rawTopics = [
@@ -773,7 +779,6 @@
             for (let i = 0; i < words.length; i++) {
                 await speakSingleWord(words[i]);
                 if (i < words.length - 1) {
-                    // 停頓間隔維持為更流暢的 0.5 秒 (500 毫秒)
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
