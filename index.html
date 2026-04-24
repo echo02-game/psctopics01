@@ -58,10 +58,11 @@
 
         h2, h3, h4, p, label { color: var(--text-brown) !important; }
 
-        /* 頂部標題 */
+        /* 頂部標題區 */
         header {
+            position: relative; /* 為了讓左上角按鈕絕對定位 */
             text-align: center;
-            padding: 25px 15px;
+            padding: 45px 15px 20px 15px; /* 增加頂部 padding，避免按鈕擋住標題 */
             background: var(--container-bg);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             border-bottom-left-radius: 20px;
@@ -79,6 +80,28 @@
             color: var(--text-brown);
             font-size: 24px;
             font-weight: bold;
+        }
+
+        /* 左上角返回自修室小按鈕 */
+        .home-float-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-size: 12px;
+            padding: 6px 10px;
+            width: auto;
+            background-color: transparent;
+            color: var(--text-brown);
+            border: 1px solid var(--text-brown);
+            border-radius: 15px;
+            box-shadow: none;
+            display: inline-flex;
+            align-items: center;
+            transition: 0.2s;
+        }
+        .home-float-btn:hover {
+            background-color: var(--text-brown);
+            color: white;
         }
 
         /* 底部版權 */
@@ -416,7 +439,9 @@
         @media (max-width: 600px) {
             .topic-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .topic-btn { padding: 15px 10px; font-size: 15px; }
-            header { padding: 20px 10px; }
+            /* 手機端按鈕與 header 微調 */
+            header { padding-top: 50px; }
+            .home-float-btn { top: 12px; left: 12px; font-size: 11px; padding: 5px 8px; }
             .timer-display { font-size: 50px; }
         }
     </style>
@@ -441,8 +466,9 @@
         </div>
     </div>
 
-    <!-- 頂部標題 -->
+    <!-- 頂部標題區，內含左上角小按鈕 -->
     <header id="main-header">
+        <button class="home-float-btn" onclick="window.location.href='https://echo02-game.github.io/pttcgamehub/'">🏠 返回普通話自修室</button>
         <div class="title-line1">普通話水平測試</div>
         <div class="title-line2">命題説話練習 —— 説出你的故事 🎤</div>
     </header>
