@@ -60,9 +60,9 @@
 
         /* 頂部標題區 */
         header {
-            position: relative; /* 為了讓左上角按鈕絕對定位 */
+            position: relative; 
             text-align: center;
-            padding: 45px 15px 20px 15px; /* 增加頂部 padding，避免按鈕擋住標題 */
+            padding: 85px 15px 20px 15px; 
             background: var(--container-bg);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             border-bottom-left-radius: 20px;
@@ -100,6 +100,28 @@
             transition: 0.2s;
         }
         .home-float-btn:hover {
+            background-color: var(--text-brown);
+            color: white;
+        }
+
+        .return-float-btn {
+            position: absolute;
+            top: 48px;
+            left: 15px;
+            font-size: 12px;
+            padding: 6px 10px;
+            width: auto;
+            background-color: transparent;
+            color: var(--text-brown);
+            border: 1px solid var(--text-brown);
+            border-radius: 15px;
+            box-shadow: none;
+            display: inline-flex;
+            align-items: center;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .return-float-btn:hover {
             background-color: var(--text-brown);
             color: white;
         }
@@ -205,6 +227,32 @@
         }
         .download-btn:hover {
             background-color: var(--topic-active) !important;
+        }
+
+        /* 匯入關鍵詞按鈕特別設計，使其更醒目 */
+        .import-btn {
+            background: linear-gradient(135deg, #FFD09B 0%, #FFEAC5 100%);
+            color: var(--text-brown);
+            border: 2px solid #e8b070;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 208, 155, 0.5);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            width: auto;
+            margin: 0;
+            user-select: none;
+        }
+        .import-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 208, 155, 0.7);
+            background: linear-gradient(135deg, #FFEAC5 0%, #FFD09B 100%);
         }
 
         /* 返回列表按鈕 */
@@ -436,12 +484,32 @@
             margin-bottom: 8px;
         }
 
+        /* 橫向按鈕排列 */
+        .action-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .action-row button {
+            width: auto;
+            flex: 1;
+            margin-top: 0 !important;
+            padding: 12px 5px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
         @media (max-width: 600px) {
+            .action-row button { font-size: 12px; padding: 10px 2px; white-space: normal; line-height: 1.3; }
+
             .topic-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .topic-btn { padding: 15px 10px; font-size: 15px; }
             /* 手機端按鈕與 header 微調 */
-            header { padding-top: 50px; }
+            header { padding-top: 85px; }
             .home-float-btn { top: 12px; left: 12px; font-size: 11px; padding: 5px 8px; }
+            .return-float-btn { top: 42px; left: 12px; font-size: 11px; padding: 5px 8px; }
             .timer-display { font-size: 50px; }
         }
     </style>
@@ -469,6 +537,7 @@
     <!-- 頂部標題區，內含左上角小按鈕 -->
     <header id="main-header">
         <button class="home-float-btn" onclick="window.location.href='https://echo02-game.github.io/pttcgamehub/'">🏠 返回普通話自修室</button>
+        <button id="return-topics-float-btn" class="return-float-btn" onclick="returnToTopics()" style="display: none;">🔙 返回話題列表</button>
         <div class="title-line1">普通話水平測試</div>
         <div class="title-line2">命題説話練習 —— 説出你的故事 🎤</div>
     </header>
@@ -485,7 +554,7 @@
                 <h4>📖 網頁使用方式説明：</h4>
                 <ol>
                     <li>點擊話題或隨機開始話題</li>
-                    <li>寫下你的關鍵詞，填寫後可下載保存</li>
+                    <li>寫下（或匯入）你的關鍵詞，填寫後可下載保存</li>
                     <li>練習關鍵詞讀音</li>
                     <li>開始三分鐘説話練習</li>
                 </ol>
@@ -501,6 +570,13 @@
         <!-- 視圖 2：話題大綱與關鍵詞輸入 -->
         <div id="view-outline" class="view">
             <h3 id="current-topic-title" style="text-align:center;"></h3>
+
+            <div style="text-align: center; margin: 15px 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;">
+                <!-- 改用原生 HTML label 觸發上傳檔案，百分之百兼容手機與電腦 -->
+                <input type="file" id="upload-keyword-file" accept=".txt" style="display: none;" onchange="handleFileUpload(event)">
+                <label class="import-btn" for="upload-keyword-file">📂 匯入關鍵詞</label>
+                <span style="font-size: 13px; color: #888;">（只適用於下載的關鍵詞txt）</span>
+            </div>
             
             <div class="info-alert">
                 💡 <strong>提示：</strong> 輸入多個關鍵詞時，請用「/」分隔（例如：開心/難忘）。AI 朗讀時會自動為您停頓。
@@ -508,7 +584,7 @@
 
             <div id="outline-container"></div>
             <button class="action-btn" onclick="confirmKeywords()" style="margin-top: 10px;">✅ 確認</button>
-            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+            
         </div>
 
         <!-- 視圖 3：拼音展示與練習 -->
@@ -516,13 +592,14 @@
             <h3 id="practice-topic-title" style="text-align:center;"></h3>
             <div id="practice-container"></div>
             
-            <button class="action-btn" onclick="startTimer()" style="margin-top: 15px;">⏱️ 開始三分鐘説話練習</button>
-            <button class="download-btn" onclick="downloadKeywords()">📥 下載我的關鍵詞</button>
+            <div class="action-row">
+                <button class="secondary" onclick="showView('view-outline')">✍️ 補充關鍵詞</button>
+                <button class="download-btn" onclick="downloadKeywords()">📥 下載我的關鍵詞</button>
+                <button class="action-btn" onclick="startTimer()">⏱️ 開始三分鐘練習</button>
+            </div>
             
             <!-- 新增 AI 讀音指引連結 -->
-            <a href="#" onclick="showVoiceGuideModal(); return false;" style="color: #999; font-size: 14px; text-decoration: underline; display: block; text-align: center; margin-top: 15px;">如 AI 無法讀出普通話，請看指引</a>
-
-            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+            <a href="#" onclick="showVoiceGuideModal(); return false;" style="color: #999; font-size: 14px; text-decoration: underline; display: block; text-align: center; margin-top: 20px;">如 AI 無法讀出普通話，請看指引</a>
         </div>
 
         <!-- 視圖 4：三分鐘説話倒計時 -->
@@ -531,7 +608,7 @@
             <div class="timer-display" id="timer">03:00</div>
             <div id="speaking-container"></div>
             <button class="action-btn" onclick="finishSpeaking()" style="margin-top: 20px;">🏁 結束練習</button>
-            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+            
         </div>
 
         <!-- 視圖 5：練習自評 Checklist -->
@@ -548,7 +625,7 @@
             </div>
             <button onclick="submitSurvey()">📋 提交並複製打卡信息</button>
             <button class="download-btn" onclick="downloadKeywords()">📥 下載我的關鍵詞</button>
-            <button class="secondary" onclick="returnToTopics()">返回話題列表</button>
+            
         </div>
 
     </div>
@@ -619,19 +696,353 @@
         四、 主體：晚上的休閒
         五、 結語：這一天的感受
 
-        2. 老師
-        一、 開頭：介紹這位老師
-        二、 主體：老師的外貌與性格
-        三、 主體：令我印象深刻的一件事
-        四、 結語：老師對我的影響與想説的話
-
         3. 珍貴的禮物
         一、 開頭：這是一份什麼禮物
         二、 主體：是誰送的以及當時的背景
         三、 主體：為什麼這份禮物很珍貴
         四、 結語：我的感受與總結
 
-        `;
+        
+
+        7. 過去的一年
+        一、 開頭：總結過去一年的幾個關鍵詞
+        二、 主體：工作或學習上的重要經歷與突破
+        三、 主體：生活中的變化、新的嘗試、挑戰
+        四、 主體：遇到的一點遺憾或反思
+        五、 結語：對新一年的期盼與展望
+
+        11. 家鄉（或熟悉的地方）
+        一、 開頭：點明家鄉或熟悉地方的名稱及地理位置
+        二、 主體：當地的氣候特徵與自然風景
+        三、 主體：特色美食與風土人情
+        四、 主體：在那裡度過的難忘時光或生活節奏
+        五、 結語：對我的影響；以後如何做
+
+        19. 我了解的地域文化（或風俗）
+        一、 開頭：點出具體的地域文化或風俗名稱
+        二、 主體：該文化或風俗的歷史起源與背景
+        三、 主體：具體的表現形式（如節慶活動、飲食習慣）
+        四、 主體：我參與其中的親身體驗、觀察和感受
+        五、 結語：對我的影響；以後如何做
+
+        26. 向往的地方
+        一、 開頭：說出最向往的地方
+        二、 主體：吸引我的核心原因；該地著名的自然景觀或歷史名勝
+        三、 主體：當地的特色文化、美食或生活氛圍
+        四、 主體：這個地方與我個人愛好或夢想的聯繫
+        五、 結語：對我的影響；以後如何做
+
+        46. 網絡時代的生活
+        一、 開頭：點明網絡時代對日常生活的深刻改變
+        二、 主體：網絡帶來的便利
+        三、 主體：網絡帶來的負面影響
+        四、 主體：我個人的應對方式與平衡技巧
+        五、 結語：對我的影響；以後如何做
+
+        9. 童年生活
+        一、 開頭：回憶童年時光的整體基調
+        二、 主體：印象深刻的童年遊戲、活動，或玩具
+        三、 主體：陪伴成長的長輩或兒時玩伴
+        四、 主體：童年夢想與趣事
+        五、 結語：對我的影響；以後如何做
+
+        31. 家庭對個人成長的影響
+        一、 開頭：家庭對於個人成長的作用
+        二、 主體：家人對我性格養成的積極作用
+        三、 主體：家庭教育對我價值觀與習慣的塑造
+        四、 主體：一至兩個體現家人支持與影響的具體小故事
+        五、 結語：對我的影響；以後如何做
+
+        49. 對親情（或友情、愛情）的理解
+        一、 開頭：選定一種情感並說出核心理解
+        二、 主體：這種情感在日常生活中的具體體現
+        三、 主體：在遇到困難時，該情感給予的支撐力量
+        四、 主體：雙方在相處中的互相付出與包容
+        五、 結語：對我的影響；以後如何做
+
+        4. 假日生活
+        一、 開頭：概括自己通常的假日風格
+        二、 主體：假日裡的居家放鬆與作息調整
+        三、 主體：個人喜好活動
+        四、 主體：與家人朋友的社交聚會或短途出遊
+        五、 結語：簡單總結
+
+        14. 難忘的旅行
+        一、 開頭：介紹旅行的目的地與同行人員
+        二、 主體：爲什麽難忘；旅行中發生的趣事或意外驚喜
+        三、 主體：我當時的狀態
+        四、 主體：這次旅行帶給我的新知識或心態變化
+        五、 結語：對我的影響；以後如何做
+
+        21. 讓我快樂的事情
+        一、 開頭：點明事情
+        二、 主體：事情發生的具體經過與細節
+        三、 主體：沉浸在事情中的狀態與心情
+        四、 主體：這件事為何能給我帶來快樂；
+        五、 結語：對我的影響；以後如何做
+
+        27. 讓我感動的事情
+        一、 開頭：點明事情
+        二、 主體：事情發生的時間、地點與核心人物
+        三、 主體：觸動內心的具體細節、動作或話語
+        四、 主體：這件事對我思想或情感的深刻衝擊
+        五、 結語：對我的影響；以後如何做
+
+        30. 學習普通話（或其他語言）的體會
+        一、 開頭：點明普通話的重要性及個人的學習/教學契機
+        二、 主體：初期在發音、練習上遇到的具體困難
+        三、 主體：採取的練習方法與逐漸進步的過程
+        四、 主體：學好普通話在工作或生活中的實際應用
+        五、 結語：總結
+
+
+        2. 老師
+        一、 開頭：點明這位老師的姓名以及他/她教授的科目
+        二、 主體：老師的外貌特徵與獨特的教學風格
+        三、 主體：一件/兩件老師關心學生或耐心指導的難忘小事
+        四、 主體：老師對我個人成長的啟發和影響
+        五、 結語：簡單總結
+
+        8. 朋友
+        一、 開頭：點出這位好朋友的名字及相識的機緣
+        二、 主體：朋友的性格特點與彼此共同的興趣愛好
+        三、 主體：分享一次/兩次互相幫助或共同經歷的難忘事件
+        四、 主體：朋友在我遇到困難時給予的鼓勵與支持
+        五、 結語：簡單總結
+
+        17. 尊敬的人
+        一、 開頭：直接點出這位讓你尊敬的人是誰
+        二、 主體：他/她身上最讓我敬佩的優秀品質
+        三、 主體：具體講述一件/兩件體現其高尚品格的代表性事件
+        四、 主體：他/她的言行對我工作或生活態度的積極影響
+        五、 結語：簡單總結
+
+        23. 我欣賞的歷史人物
+        一、 開頭：點出這位歷史人物的姓名及所處的時代
+        二、 主體：該人物的主要歷史功績或卓越成就
+        三、 主體：他/她在面對逆境時展現的智慧或人格魅力
+        四、 主體：這位歷史人物的經歷對現代人（或我個人）的啟示
+        五、 結語：簡單總結
+
+        36. 談談衛生與健康
+        一、 開頭：點明衛生與健康的關係
+        二、 主體：個人衛生習慣的培養
+        三、 主體：公共衛生的維護與每個人的社會責任
+        四、 主體：身體健康與心理健康的相互影響及重要性
+        五、 結語：簡單總結
+
+        37. 對環境保護的認識
+        一、 開頭：指出環境保護的重要性
+        二、 主體：列舉目前面臨的環境問題及其危害
+        三、 主體：環保理念在日常生活中的具體體現
+        四、 主體：推動環保所需的社會共識與科技力量
+        五、 結語：簡單總結
+
+        41. 科技發展與社會生活
+        一、 開頭：概述科技飛速發展對人類社會產生的作用
+        二、 主體：科技給生活帶來的便利
+        三、 主體：科技在工作與教育領域的創新應用
+        四、 主體：科技發展帶來的新挑戰
+        五、 結語：簡單總結
+
+        45. 對垃圾分類的認識
+        一、 開頭：點明垃圾分類的作用
+        二、 主體：垃圾分類對環境保護與資源回收的實際好處
+        三、 主體：香港或其他地區垃圾分類的情況；介紹常見的垃圾分類標準
+        四、 主體：個人在日常生活中落實垃圾分類的經驗與面臨的小困難
+        五、 結語：簡單總結
+
+        50. 小家、大家與國家
+        一、 開頭：闡述「小家」、「大家」（社會）與「國家」之間的關係
+        二、 主體：小家如何影響大家；大家如何保障小家
+        三、 主體：大家（社會）如何影響國家；國家如何保障大家
+        四、 主體：以個人角色為切入點，講述三者間的關係
+        五、 結語：簡單總結
+
+
+        5. 我喜愛的植物
+        一、 開頭：點出最喜愛的植物名稱
+        二、 主體：喜愛的原因
+        三、 主體：該植物的外觀特徵與生長環境；它所代表的品格或象徵意義
+        四、 主體：我與這種植物的故事
+        五、 結語：對我的影響
+
+        10. 我的興趣愛好
+        一、 開頭：概括自己的主要興趣愛好
+        二、 主體：這個愛好的起源與培養過程
+        三、 主體：投入這個愛好時的具體經歷與樂趣
+        四、 主體：愛好對我工作、生活或心態的積極幫助
+        五、 結語：對我的影響
+
+        15. 我喜歡的美食
+        一、 開頭：點明最喜愛美食名稱及所屬地域
+        二、 主體：喜歡的原因
+        三、 主體：美食的色香味特徵與獨特口感；製作過程或背後的飲食文化
+        四、 主體：我與這道美食的故事
+        五、 結語：對我的影響
+
+        18. 我喜愛的動物
+        一、 開頭：說出最喜愛的動物名稱
+        二、 主體：喜歡的原因
+        三、 主體：動物的外形特徵、生活習性或獨特的性格特點
+        四、 主體：我與這種動物的互動經歷或觀察感受
+        五、 結語：簡單總結
+
+        20. 體育運動的樂趣
+        一、 開頭：點明自己喜歡的體育運動項目
+        二、 主體：參與該項運動的具體過程與身體感受
+        三、 主體：運動帶來的心理釋放與減壓效果
+        四、 主體：通過體育運動而獲得的特別經歷
+        五、 結語：簡單總結
+
+        12. 我喜歡的季節（或天氣）
+        一、 開頭：直接點出最喜歡的季節或天氣狀態
+        二、 主體：喜歡的原因；該季節或天氣的獨特自然景觀與氣候特點
+        三、 主體：這個時候最愛的活動
+        四、 主體：它帶給我的特殊情感或心境變化
+        五、 結語：簡單總結
+
+        13. 印象深刻的書籍（或報刊）
+        一、 開頭：介紹書籍的書名、作者及題材
+        二、 主體：印象深刻的原因；書中的核心內容或最吸引人的情節
+        三、 主體：印象最深的人物形象或深刻的經典語錄
+        四、 主體：這本書對我思想觀念、專業或生活的啟發和影響
+        五、 結語：簡單總結
+
+        22. 我喜歡的節日
+        一、 開頭：點明最喜歡的傳統或現代節日名稱
+        二、 主體：喜歡的原因
+        三、 主體：節日的歷史由來或文化背景；節日期間的特色習俗與慶祝活動
+        四、 主體：我與家人或朋友共度節日的溫馨記憶
+        五、 結語：簡單總結
+
+        28. 我喜愛的藝術形式
+        一、 開頭：點出喜愛的藝術形式
+        二、 主體：喜愛的原因；這種藝術形式的獨特形式與魅力
+        三、 主體：讓我深感震撼的經典代表作品
+        四、 主體：欣賞或學習這種藝術形式給我帶來的心靈愉悅
+        五、 結語：對我的影響
+
+        29. 我了解的十二生肖
+        一、 開頭：簡介十二生肖的背景
+        二、 主體：十二生肖的起源傳說或排序故事
+        三、 主體：生肖所代表的性格特徵與文化寓意
+        四、 主體：生肖文化在現代生活中的體現（如本命年習俗、郵票藝術）
+        五、 結語：簡單總結
+
+        33. 談服飾
+        一、 開頭：指出服飾的作用
+        二、 主體：我的穿衣風格與搭配偏好
+        三、 主體：不同場合對服飾的具體要求與著裝禮儀
+        四、 主體：服飾的演變如何反映時代的發展與文化的交融
+        五、 結語：簡單總結
+
+        40. 談中國傳統文化
+        一、 開頭：概括中國傳統文化
+        二、 主體：傳統文化的核心價值觀
+        三、 主體：傳統文化在藝術、文學或節日風俗上的具體體現
+        四、 主體：我們在現代社會中如何傳承與創新傳統文化
+        五、 結語：對我的影響
+
+        47. 對美的看法
+        一、 開頭：開門見山，給出自己對「美」的綜合定義
+        二、 主體：外在美
+        三、 主體：內在美
+        四、 主體：生活中發現的美
+        五、 結語：對我的影響
+
+
+        6. 我的理想（或願望）
+        一、 開頭：點明自己現階段的理想或願望
+        二、 主體：理想/願望萌芽的背景與原因
+        三、 主體：實現這個理想/願望能為自己帶來的積極價值
+        四、 主體：目前為了實現理想已經付出的努力與未來的具體規劃
+        五、 結語：對我的影響；以後怎麽做
+
+        25. 我喜歡的職業（或專業）
+        一、 開頭：說出自己喜歡的職業或專業；喜歡的原因
+        二、 主體：該職業的日常工作內容與專業特色
+        三、 主體：這個職業/專業最具挑戰性但也最吸引人的地方
+        四、 主體：我從事該職業/專業獲得的成就感
+        五、 結語：簡單總結
+
+        16. 我所在的學校（或公司、團隊、其他機構）
+        一、 開頭：介紹所在機構的名稱及整體氛圍
+        二、 主體：機構的物理環境或硬件設施
+        三、 主體：團隊的文化氛圍與同事間的協作精神
+        四、 主體：在這裡發生的一次難忘的經歷
+        五、 結語：簡單總結
+
+        24. 勞動的體會
+        一、 開頭：勞動的重要作用
+        二、 主體：分享一次具體的體力或腦力勞動經歷
+        三、 主體：勞動過程中的辛苦與克服困難的過程
+        四、 主體：勞動成果帶來的心靈滿足與成就感
+        五、 結語：總結
+
+        34. 自律與我
+        一、 開頭：自律的定義
+        二、 主體：自律給我的工作和生活帶來的實質性改變與好處
+        三、 主體：我個人的自律習慣
+        四、 主體：缺乏自律時帶來的不良後果與教訓
+        五、 結語：簡單總結
+
+        35. 對終身學習的看法
+        一、 開頭：我對終身學習的看法
+        二、 主體：社會變革與終身學習
+        三、 主體：終身學習帶來的好處
+        四、 主體：我在日常生活中踐行終身學習的方法
+        五、 結語：簡單總結
+
+        39. 對團隊精神的理解
+        一、 開頭：團隊精神的定義和作用
+        二、 主體：團隊中每個人發揮個人專長的重要性
+        三、 主體：團隊成員之間相互包容與溝通的必要性
+        四、 主體：分享一個/兩個通過團隊合作成功解決難題的實際案例
+        五、 結語：簡單總結
+
+        43. 對幸福的理解
+        一、 開頭：我對幸福的理解
+        二、 主體：幸福在日常生活中的體現
+        三、 主體：深層次幸福感（奮鬥與實現自我價值）
+        四、 主體：感到幸福的一件/兩件小事
+        五、 結語：簡單總結
+
+        44. 如何保持良好的心態
+        一、 開頭：保持良好心態的作用
+        二、 主體：日常保持良好心態的有效方法
+        三、 主體：具體事件一
+        四、 主體：具體事件二
+        五、 結語：簡單總結
+
+        48. 談傳統美德
+        一、 開頭：有哪些傳統美德
+        二、 主體：傳統美德的具體體現
+        三、 主體：這些美德在現代社會中的傳承與時代價值
+        四、 主體：我在日常生活中踐行傳統美德的具體行為
+        五、 結語：對我的影響
+
+        42. 談個人修養
+        一、 開頭：定義個人修養；概括個人修養
+        二、 主體：修養的培養
+        三、 主體：修養的體現
+        四、 主體：個人修養對人際關係與職業發展的重要影響
+        五、 結語：簡單總結
+
+        38. 談社會公德（或職業道德）
+        一、 開頭：定義社會公德（或職業道德）
+        二、 主體：社會公德在公共場所的具體體現；或 職業道德在工作崗位上的表現
+        三、 主體：我的故事/他人的故事
+        四、 主體：缺乏公德/道德帶來的負面影響及社會代價
+        五、 結語：對我的影響；以後怎麽做
+
+        32. 生活中的誠信
+        一、 開頭：誠信的意義
+        二、 主體：誠信在生活中的體現
+        三、 主體：分享一個/兩個自己堅守誠信或被他人誠信感動的故事
+        四、 主體：失信的代價以及信用在現代社會中的重要性
+        五、 結語：對我的影響；以後怎麽做
+`;
         /* ================= 修改區結束 ================= */
 
         const { pinyin } = pinyinPro;
@@ -711,6 +1122,15 @@
             document.querySelectorAll('#app-container > .view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             window.scrollTo(0, 0); 
+            
+            const returnBtn = document.getElementById('return-topics-float-btn');
+            if(returnBtn) {
+                if(viewId === 'view-topics' || viewId === 'login-view') {
+                    returnBtn.style.display = 'none';
+                } else {
+                    returnBtn.style.display = 'inline-flex';
+                }
+            }
         }
 
         function returnToTopics() {
@@ -740,9 +1160,14 @@
             currentTopic = topicText;
             document.getElementById('current-topic-title').innerText = currentTopic;
             
+            // 只有當新點擊的話題與目前話題不同，或是從列表進來時，才重置大綱和清空輸入
+            // 這保證了「補充關鍵詞」返回時不會清空已輸入內容
             currentTopicOutlines = topicOutlines[currentTopic] || defaultOutlines;
             
             const container = document.getElementById('outline-container');
+            // 只在需要重置時清空（例如點了另一個話題）
+            // 如果 container 裡面的大綱數量跟要求的一樣且話題沒變，我們可以不重新渲染
+            // 為了簡單，如果從首頁點進來，我們總是重新渲染。如果是點「補充關鍵詞」退回，不會呼叫 selectTopic 而是直接 showView
             container.innerHTML = '';
             
             currentTopicOutlines.forEach((outline, index) => {
@@ -756,6 +1181,58 @@
             showView('view-outline');
         }
 
+
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                
+                // 檢查話題是否匹配
+                const topicMatch = text.match(/話題：(.*)/);
+                if (topicMatch && topicMatch[1].trim() !== currentTopic) {
+                    if (!confirm(`⚠️ 上傳的檔案話題為「${topicMatch[1].trim()}」，與目前選擇的「${currentTopic}」不符。\n\n是否仍要嘗試載入？（僅會載入大綱名稱相同的關鍵詞）`)) {
+                        event.target.value = '';
+                        return;
+                    }
+                }
+
+                let loadedCount = 0;
+                currentTopicOutlines.forEach((outline, index) => {
+                    // 尋找【大綱名稱】
+                    const searchStr = `【${outline}】`;
+                    const idx = text.indexOf(searchStr);
+                    if (idx !== -1) {
+                        // 擷取該大綱到下一個大綱（或結尾）的文字
+                        const nextIdx = text.indexOf('【', idx + searchStr.length);
+                        const substr = text.substring(idx + searchStr.length, nextIdx !== -1 ? nextIdx : text.length);
+                        
+                        // 尋找詞彙內容
+                        const wordMatch = substr.match(/詞彙：(.*)/);
+                        if (wordMatch) {
+                            document.getElementById(`kw-${index}`).value = wordMatch[1].trim();
+                            loadedCount++;
+                        } else if (substr.includes('（未輸入關鍵詞）')) {
+                            document.getElementById(`kw-${index}`).value = '';
+                        }
+                    }
+                });
+                
+                if (loadedCount > 0) {
+                    alert(`✅ 成功載入 ${loadedCount} 組關鍵詞！`);
+                } else {
+                    alert(`⚠️ 未能找到符合目前大綱的關鍵詞，請檢查檔案是否正確。`);
+                }
+                
+                // 重置 input value 以便下次能選同一個檔案
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
         function confirmKeywords() {
             keywordsData = [];
             let hasInput = false;
@@ -765,10 +1242,7 @@
                 keywordsData.push({ outline: outline, keyword: val });
             });
 
-            if(!hasInput) {
-                alert("請至少為一個提綱輸入關鍵詞喔！");
-                return;
-            }
+            // 允許完全不輸入關鍵詞直接進入下一步
 
             document.getElementById('practice-topic-title').innerText = currentTopic;
             const container = document.getElementById('practice-container');
@@ -858,7 +1332,7 @@
                 container.innerHTML += `
                     <div class="card-item">
                         <h4>${item.outline}</h4>
-                        <div style="font-size:18px; font-weight:bold;">${item.keyword || '<span style="color:#ccc;font-size:15px;font-style:italic;">（無）</span>'}</div>
+                        <div style="font-size:18px; font-weight:bold;">${item.keyword || '<span style="color:#ccc;font-size:15px;font-style:italic;">（未輸入關鍵詞）</span>'}</div>
                     </div>
                 `;
             });
